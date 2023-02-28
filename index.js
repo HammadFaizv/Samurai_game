@@ -22,7 +22,8 @@ const lamp = new Sprite({
         y: 348
     },
     imageSrc: './assets/lamp.png',
-    scale: 2.3
+    scale: 2.3,
+    framesHold: 1
 });
 
 const shop = new Sprite({
@@ -32,12 +33,13 @@ const shop = new Sprite({
     },
     imageSrc: './assets/shop.png',
     scale: 2.5,
-    framesMax: 6
+    framesMax: 6,
+    framesHold: 8
 });
 
 const player = new fighter({
     position : {
-        x: 0,
+        x: 300,
         y: 0,
     },
     velocity: {
@@ -92,15 +94,17 @@ const player = new fighter({
         },
         width: 145,
         height: 50
-    }
+    },
+    framesHold: 4
 });
 
 //console.log(player);
 //player.draw();
 
-const enemy = new fighter({
+const enemy = new enemyFighter({
+    player: player,
     position : {
-        x: 400,
+        x: 700,
         y: 100,
     },
     velocity: {
@@ -155,8 +159,10 @@ const enemy = new fighter({
             y: 50
         },
         width: 165,
-        height: 50
-    }
+        height: 65
+    },
+    framesHold: 8,
+    ai: true
 });
 
 //enemy.draw()
@@ -179,7 +185,7 @@ const keys = {
     }
 }
 
-decreaseTimer();
+// decreaseTimer();
 
 function animate(){
     window.requestAnimationFrame(animate);
@@ -194,14 +200,20 @@ function animate(){
 
     player.update();
     enemy.update();
-
+    // AI();
     //player movement
+    if (timer > 0)
+    {
+    if(player.move){
+        document.querySelector('#displayText').style.display = 'None';
+    }
+
     player.velocity.x = 0;
     
-    if (keys.a.pressed && player.lastKey === 'a'){
+    if (keys.a.pressed && player.lastKey === 'a' && player.position.x >= 0){
         player.velocity.x = -5;
         player.switchSprite('run');
-    } else if (keys.d.pressed && player.lastKey === 'd') {
+    } else if (keys.d.pressed && player.lastKey === 'd' && player.position.x <= canvas.width - 80) {
         player.velocity.x = 5;
         player.switchSprite('run');
     } else {
@@ -216,18 +228,18 @@ function animate(){
     }
 
     //enemy movement
-    enemy.velocity.x = 0;
-    if (keys.ArrowLeft.pressed && enemy.lastKey === 'ArrowLeft'){
-        enemy.velocity.x = -5;
-        enemy.switchSprite('run');
-    } else if (keys.ArrowRight.pressed && enemy.lastKey === 'ArrowRight') {
-        enemy.velocity.x = 5;
-        enemy.switchSprite('run');
-    } else {
-        enemy.switchSprite('idle');
-    }
+    // enemy.velocity.x = 0;
+    // if (keys.ArrowLeft.pressed && enemy.lastKey === 'ArrowLeft'){
+    //     enemy.velocity.x = -5;
+    //     enemy.switchSprite('run');
+    // } else if (keys.ArrowRight.pressed && enemy.lastKey === 'ArrowRight') {
+    //     enemy.velocity.x = 5;
+    //     enemy.switchSprite('run');
+    // } else {
+    //     enemy.switchSprite('idle');
+    // }
 
-    //enemy jumping
+    // enemy jumping
     if (enemy.velocity.y < 0) {
         enemy.switchSprite('jump');
     } else if (enemy.velocity.y > 0){
@@ -277,13 +289,23 @@ function animate(){
     if (enemy.health <= 0 || player.health <= 0) {
         determineWinner({player, enemy,timerID});
     }
+} else{
+    player.velocity.x = 0;
+    enemy.velocity.x = 0;
+    player.switchSprite('idle');
+    enemy.switchSprite('idle');
+}
 }
 
 animate();
 
+decreaseTimer();
+
+
 window.addEventListener('keydown', (event)=> {
     if (!player.dead){
-    
+        //as soon as player moves 
+        player.move = true;
     switch (event.key){
         //player keys
         case 'd':
